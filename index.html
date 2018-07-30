@@ -22,13 +22,37 @@
       margin-bottom: 10px;
       background: lightgray;
     }
+
+    button {
+      padding: 5px;
+    }
+
+    .row {
+      display: flex
+    }
+
+    .column {
+      flex: 50%
+    }
   </style>
 </head>
 
 <body>
   <h1>RxJS Test</h1>
-  <div>
-    <ul id="list"></ul>
+  <div class="row">
+    <div class="column">
+      <center>
+        <button id="unsunscribeBtn1">Unsubscribe</button>
+      </center>
+      <ul id="list1"></ul>
+    </div>
+    <div class="column">
+      <center>
+        <button id="unsunscribeBtn2">Unsubscribe</button>
+        <button id="addSubscriptionBtn">Add Subscription One</button>
+      </center>
+      <ul id="list2"></ul>
+    </div>
   </div>
   <script src="/bundle.js"></script>
 </body>
