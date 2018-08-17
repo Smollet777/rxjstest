@@ -1,8 +1,9 @@
 import { Observable } from 'rxjs';
+import { share } from 'rxjs/operators';
 
 let observable1 = Observable.create((observer: any) => {
   observer.next(`Observable One is alive: ${Date.now()}`);
-});
+}).pipe(share());
 
 document.getElementById('sunscribeBtn1').addEventListener('click', () => {
   let subscription1 = observable1.subscribe(
