@@ -1,63 +1,32 @@
-import { Observable, from, fromEvent, of, interval, range, timer, defer, empty, never, throwError } from 'rxjs'
+import { defaultIfEmpty, every, sequenceEqual } from 'rxjs/operators'
+import { iif } from 'rxjs'
 
-import { merge } from 'rxjs'
-import { switchMap, map } from 'rxjs/operators'
+import { switchMap } from 'rxjs/operators'
+import { empty, from, of } from 'rxjs'
+const arr = [1, 3, 5]
 
-const observable = Observable.create((observer: any) => {
-  observer.next('Hello')
-})
+const defaultIfNone = empty().pipe(defaultIfEmpty('DEFAULT value IFEMPTY'))
+  .subscribe(val => logItem(val, 1));
 
-const subscribe1 = observable.subscribe(
-  (data: any) => logItem('subscribe:' + data, 1),
-  (err: any) => logItem(err, 1),
-  () => logItem('subscribe completed', 1)
-)
 
-const click = fromEvent(document, 'click')
-  .pipe(map((event: any) => `Event time: ${new Date(event.timeStamp)}`))
-  .subscribe(val => logItem(val, 1))
-
-const sourceFrom = from('str')/*promise or iterables*/.subscribe(char => logItem(char, 2))
-
-logItem('...', 2)
-
-const sourceOf = of({ name: 'Object' }, ['a', 'r', 'r', 'a', 'y'], function foo() {
-})
-  .subscribe(val => logItem(val, 2))
-
-const intevral = interval(1000)
-  .subscribe(val => logItem(`interval ${val} sec`, 1))
-
-const ranje = range(1, 10)
-  .subscribe(val => console.log('range ' + val))
-
-const withoutDef = of(`moment of obs creation ${new Date()}`)
-const withDef = defer(() => of(`moment of obs subscription ${new Date()}`))
-timer(2000)
+const Every = from(arr)
   .pipe(
-    switchMap((_: any) => merge(withoutDef, withDef))
-  ).subscribe(x => logItem(x, 2))
+    every((val: any) => val % 2 !== 0)
+  ).subscribe((val: boolean) => logItem(`is EVERY value of [${arr}] odd? ${val}`, 1))
 
-logItem('...', 2)
+const expectedSequence = from(arr);
+of([1, 2, 3], arr, [7, 8, 9]).pipe(
+  switchMap(a =>
+    from(a).pipe(sequenceEqual(expectedSequence)))
+).subscribe(x => logItem(`SEQUENCE is EQUAL ${arr}? ${x}`, 2))
 
-const emptySubscribe = empty().subscribe(
-  (data: any) => logItem('emptySubscribe:' + data, 1),
-  (err: any) => logItem(err, 1),
-  () => logItem('emptySubscribe just ends', 1)
+let subscribeToFirst = true;
+const firstOrSecond = iif(
+  () => subscribeToFirst,
+  of('first'),
+  of('second'),
 )
-
-const neverSubscribe = never().subscribe(
-  (data: any) => logItem('neverSubscribe:' + data, 1),
-  (err: any) => logItem(err, 1),
-  () => logItem('neverSubscribe completed', 1)
-)
-logItem('there is "never" operator but it\'s not shoving for obvious reasons', 1)
-
-const throwErrorSubscribe = throwError(new Error('error!')).subscribe(
-  (data: any) => logItem('neverSubscribe:' + data, 1),
-  (err: any) => logItem(err, 1),
-  () => logItem('neverSubscribe completed', 1)
-)
+firstOrSecond.subscribe(value => logItem(`IIF value = ${value}`, 1));
 
 function logItem(val: any, column: number) {
   let node = document.createElement('li')
