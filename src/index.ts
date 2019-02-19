@@ -1,82 +1,67 @@
-import { Subject, BehaviorSubject, ReplaySubject, AsyncSubject } from 'rxjs';
+import { Observable, from, fromEvent, of, interval, range, timer, defer, empty, never, throwError } from 'rxjs'
 
-let subject = new Subject();
+import { merge } from 'rxjs'
+import { switchMap, map } from 'rxjs/operators'
 
-subject.subscribe(
-  data => logItem('Observer 1:' + data, 1),
-  err => logItem(err, 1),
-  () => logItem('Observer 1 completed', 1)
+const observable = Observable.create((observer: any) => {
+  observer.next('Hello')
+})
+
+const subscribe1 = observable.subscribe(
+  (data: any) => logItem('subscribe:' + data, 1),
+  (err: any) => logItem(err, 1),
+  () => logItem('subscribe completed', 1)
 )
 
-subject.next('The first item has been sent from Subject/Observer 1 ')
-logItem('...', 2)// визуальное уравнение столбцов
-subject.next('Observer 2 is about to subscribe to Subject')
+const click = fromEvent(document, 'click')
+  .pipe(map((event: any) => `Event time: ${new Date(event.timeStamp)}`))
+  .subscribe(val => logItem(val, 1))
+
+const sourceFrom = from('str')/*promise or iterables*/.subscribe(char => logItem(char, 2))
+
 logItem('...', 2)
 
-let observer2 = subject.subscribe(
-  data => logItem('Observer 2:' + data, 2),
-)
+const sourceOf = of({ name: 'Object' }, ['a', 'r', 'r', 'a', 'y'], function foo() {
+})
+  .subscribe(val => logItem(val, 2))
 
-subject.next('The second item has been sent from Subject/Observer 1')
-observer2.unsubscribe()
+const intevral = interval(1000)
+  .subscribe(val => logItem(`interval ${val} sec`, 1))
 
-////////////////////////////////////////////////////////////////////////////////////
-let behaviorSubject = new BehaviorSubject('behavior Subject init');
+const ranje = range(1, 10)
+  .subscribe(val => console.log('range ' + val))
+
+const withoutDef = of(`moment of obs creation ${new Date()}`)
+const withDef = defer(() => of(`moment of obs subscription ${new Date()}`))
+timer(2000)
+  .pipe(
+    switchMap((_: any) => merge(withoutDef, withDef))
+  ).subscribe(x => logItem(x, 2))
+
 logItem('...', 2)
-logItem('...', 2)
 
-behaviorSubject.subscribe(
-  data => logItem('behaviorSubject:' + data, 1),
-  err => logItem(err, 1),
-  () => logItem('behaviorSubject completed', 1)
+const emptySubscribe = empty().subscribe(
+  (data: any) => logItem('emptySubscribe:' + data, 1),
+  (err: any) => logItem(err, 1),
+  () => logItem('emptySubscribe just ends', 1)
 )
 
-behaviorSubject.next('Observer 2 is about to subscribe to BS')
-observer2 = behaviorSubject.subscribe(
-  data => logItem('Observer 2:' + data, 2),
+const neverSubscribe = never().subscribe(
+  (data: any) => logItem('neverSubscribe:' + data, 1),
+  (err: any) => logItem(err, 1),
+  () => logItem('neverSubscribe completed', 1)
 )
-logItem('...', 1)
+logItem('there is "never" operator but it\'s not shoving for obvious reasons', 1)
 
-behaviorSubject.next('The third item has been sent from BS')
-observer2.unsubscribe()
-
-////////////////////////////////////////////////////////////////////////////////////
-let replaySubject = new ReplaySubject(2) // values to dispatch
-replaySubject.subscribe(
-  data => logItem('replaySubject:' + data, 1),
-  err => logItem(err, 1),
-  () => logItem('replaySubject completed', 1)
+const throwErrorSubscribe = throwError(new Error('error!')).subscribe(
+  (data: any) => logItem('neverSubscribe:' + data, 1),
+  (err: any) => logItem(err, 1),
+  () => logItem('neverSubscribe completed', 1)
 )
-
-replaySubject.next('The fourth item has been sent from replaySubject')
-replaySubject.next('The fifth item has been sent from replaySubject')
-replaySubject.next('The sixth item has been sent from replaySubject')
-
-logItem('...', 2); logItem('...', 2); logItem('...', 2)
-observer2 = replaySubject.subscribe(
-  data => logItem('Observer 2:' + data, 2),
-)
-logItem('...', 1); logItem('...', 1);
-observer2.unsubscribe()
-////////////////////////////////////////////////////////////////////////////////////
-let asyncSubject = new AsyncSubject()
-asyncSubject.subscribe(
-  data => logItem('asyncSubject:' + data, 1),
-  err => logItem(err, 1),
-  () => logItem('asyncSubject completed', 1)
-)
-
-observer2 = asyncSubject.subscribe(
-  data => logItem('Observer 2:' + data, 2),
-)
-
-asyncSubject.next('The seventh item has been sent from asyncSubject')
-asyncSubject.next('The eigth and last item has been sent from asyncSubject')
-asyncSubject.complete()
 
 function logItem(val: any, column: number) {
-  let node = document.createElement('li');
-  let textNode = document.createTextNode(val);
-  node.appendChild(textNode);
-  document.getElementById('list' + column).appendChild(node);
+  let node = document.createElement('li')
+  let textNode = document.createTextNode(val)
+  node.appendChild(textNode)
+  document.getElementById('list' + column).appendChild(node)
 }
