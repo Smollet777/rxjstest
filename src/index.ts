@@ -1,4 +1,4 @@
-import { Subject, BehaviorSubject, ReplaySubject } from 'rxjs';
+import { Subject, BehaviorSubject, ReplaySubject, AsyncSubject } from 'rxjs';
 
 let subject = new Subject();
 
@@ -56,6 +56,23 @@ logItem('...', 2); logItem('...', 2); logItem('...', 2)
 observer2 = replaySubject.subscribe(
   data => logItem('Observer 2:' + data, 2),
 )
+logItem('...', 1); logItem('...', 1);
+observer2.unsubscribe()
+////////////////////////////////////////////////////////////////////////////////////
+let asyncSubject = new AsyncSubject()
+asyncSubject.subscribe(
+  data => logItem('asyncSubject:' + data, 1),
+  err => logItem(err, 1),
+  () => logItem('asyncSubject completed', 1)
+)
+
+observer2 = asyncSubject.subscribe(
+  data => logItem('Observer 2:' + data, 2),
+)
+
+asyncSubject.next('The seventh item has been sent from asyncSubject')
+asyncSubject.next('The eigth and last item has been sent from asyncSubject')
+asyncSubject.complete()
 
 function logItem(val: any, column: number) {
   let node = document.createElement('li');
